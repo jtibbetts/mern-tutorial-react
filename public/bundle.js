@@ -31419,16 +31419,58 @@ module.exports = traverseAllChildren;
 module.exports = require('./lib/React');
 
 },{"./lib/React":161}],185:[function(require,module,exports){
-'use strict';
-
 var React = require('react');
 var ReactDOM = require('react-dom');
-var $ = require('jquery');
+
+var BugList = require('./BugList');
+
+ReactDOM.render(React.createElement(BugList, null), document.getElementById('main'));
+
+},{"./BugList":188,"react":184,"react-dom":32}],186:[function(require,module,exports){
+var React = require('react');
+var ReactDOM = require('react-dom');
+
+var BugAdd = React.createClass({
+    displayName: 'BugAdd',
+
+    render: function () {
+        console.log("Rendering BugAdd");
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(
+                'form',
+                { name: 'bugAdd' },
+                React.createElement('input', { type: 'text', name: 'owner', placeholder: 'Owner' }),
+                React.createElement('input', { type: 'text', name: 'title', placeholder: 'Title' }),
+                React.createElement(
+                    'button',
+                    { onClick: this.handleSubmit },
+                    'Add Bug'
+                )
+            )
+        );
+    },
+
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var form = document.forms.bugAdd;
+        this.props.addBug({ owner: form.owner.value, title: form.title.value, status: 'New', priority: 'P1' });
+        // clear the form for the next input
+        form.owner.value = "";form.title.value = "";
+    }
+});
+
+module.exports = BugAdd;
+
+},{"react":184,"react-dom":32}],187:[function(require,module,exports){
+var React = require('react');
+var ReactDOM = require('react-dom');
 
 var BugFilter = React.createClass({
     displayName: 'BugFilter',
 
-    render: function render() {
+    render: function () {
         console.log("Rendering BugFilter");
         return React.createElement(
             'div',
@@ -31438,10 +31480,20 @@ var BugFilter = React.createClass({
     }
 });
 
+module.exports = BugFilter;
+
+},{"react":184,"react-dom":32}],188:[function(require,module,exports){
+var React = require('react');
+var ReactDOM = require('react-dom');
+var $ = require('jquery');
+
+var BugFilter = require('./BugFilter');
+var BugAdd = require('./BugAdd');
+
 var BugRow = React.createClass({
     displayName: 'BugRow',
 
-    render: function render() {
+    render: function () {
         console.log("Rendering BugRow:", this.props.bug);
         return React.createElement(
             'tr',
@@ -31449,7 +31501,7 @@ var BugRow = React.createClass({
             React.createElement(
                 'td',
                 null,
-                this.props.bug.id
+                this.props.bug._id
             ),
             React.createElement(
                 'td',
@@ -31478,10 +31530,10 @@ var BugRow = React.createClass({
 var BugTable = React.createClass({
     displayName: 'BugTable',
 
-    render: function render() {
+    render: function () {
         console.log("Rendering bug table, num items:", this.props.bugs.length);
         var bugRows = this.props.bugs.map(function (bug) {
-            return React.createElement(BugRow, { key: bug.id, bug: bug });
+            return React.createElement(BugRow, { key: bug._id, bug: bug });
         });
         return React.createElement(
             'table',
@@ -31528,46 +31580,13 @@ var BugTable = React.createClass({
     }
 });
 
-var BugAdd = React.createClass({
-    displayName: 'BugAdd',
-
-    render: function render() {
-        console.log("Rendering BugAdd");
-        return React.createElement(
-            'div',
-            null,
-            React.createElement(
-                'form',
-                { name: 'bugAdd' },
-                React.createElement('input', { type: 'text', name: 'owner', placeholder: 'Owner' }),
-                React.createElement('input', { type: 'text', name: 'title', placeholder: 'Title' }),
-                React.createElement(
-                    'button',
-                    { onClick: this.handleSubmit },
-                    'Add Bug'
-                )
-            )
-        );
-    },
-
-    handleSubmit: function handleSubmit(e) {
-        e.preventDefault();
-        var form = document.forms.bugAdd;
-        this.props.addBug({ owner: form.owner.value, title: form.title.value, status: 'New', priority: 'P1' });
-        // clear the form for the next input
-        form.owner.value = "";form.title.value = "";
-    }
-});
-
-var bugData = [{ id: 1, priority: 'P1', status: 'Open', owner: 'Ravan', title: 'App crashes on open' }, { id: 2, priority: 'P2', status: 'New', owner: 'Eddie', title: 'Misaligned border on panel' }];
-
 var BugList = React.createClass({
     displayName: 'BugList',
 
-    getInitialState: function getInitialState() {
+    getInitialState: function () {
         return { bugs: [] };
     },
-    render: function render() {
+    render: function () {
         console.log("Rendering bug list, num items:", this.state.bugs.length);
         return React.createElement(
             'div',
@@ -31585,14 +31604,14 @@ var BugList = React.createClass({
         );
     },
 
-    componentDidMount: function componentDidMount() {
+    componentDidMount: function () {
         $.ajax('/api/bugs').done(function (data) {
             this.setState({ bugs: data });
         }.bind(this));
         // In production, we'd also handle errors.
     },
 
-    addBug: function addBug(bug) {
+    addBug: function (bug) {
         console.log("Adding bug:", bug);
         $.ajax({
             type: 'POST', url: '/api/bugs', contentType: 'application/json',
@@ -31603,7 +31622,7 @@ var BugList = React.createClass({
                 var bugsModified = this.state.bugs.concat(bug);
                 this.setState({ bugs: bugsModified });
             }.bind(this),
-            error: function error(xhr, status, err) {
+            error: function (xhr, status, err) {
                 // ideally, show error to user.
                 console.log("Error adding bug:", err);
             }
@@ -31611,6 +31630,6 @@ var BugList = React.createClass({
     }
 });
 
-ReactDOM.render(React.createElement(BugList, null), document.getElementById('main'));
+module.exports = BugList;
 
-},{"jquery":25,"react":184,"react-dom":32}]},{},[185]);
+},{"./BugAdd":186,"./BugFilter":187,"jquery":25,"react":184,"react-dom":32}]},{},[185]);

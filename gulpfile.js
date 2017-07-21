@@ -5,7 +5,7 @@ var watchify = require('watchify');
 
 gulp.task('bundle', function() {
     return browserify('src/App.js')
-        .transform('babelify', {presets: ["es2015", "react"]})
+        .transform('babelify', {presets: 'react'})
         .bundle()
         .pipe(source('bundle.js'))
         .pipe(gulp.dest('public/'));
@@ -22,10 +22,15 @@ gulp.task('watch', function() {
     b.on('update', makeBundle);
 
     function makeBundle() {
-        b.transform('babelify', {presets: ["es2015", "react"]})
+        b.transform('babelify', {presets: 'react'})
             .bundle()
+            .on('error', function(err) {
+                console.error(err.message);
+                console.error(err.codeFrame);
+            })
             .pipe(source('bundle.js'))
             .pipe(gulp.dest('public/'));
+        console.log("Bundle updated, success");
     }
 
     // we have to call bundle once to kick it off.
@@ -33,3 +38,5 @@ gulp.task('watch', function() {
 
     return b;
 });
+
+gulp.task('default', ['watch']);
